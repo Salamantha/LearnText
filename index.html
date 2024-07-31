@@ -124,9 +124,8 @@
             const data = await response.json();
             pdfTextList = data;
             character = characterSelect.value; // Update character based on selection
-            if (!learningMode) {
-                displayText(data, character);
-            }
+            displayText(data, character);
+            
         } catch (error) {
             console.error('Error loading text:', error);
         }
