@@ -133,12 +133,13 @@
 
     function displayText(textList, character) {
         textArea.innerHTML = '';
-        let temp_2 = 0;
+        let temp = 0;
         textList.forEach((text, index) => {
+            let page = Math.round(index / 2004 * 111)+3;
             if (text.startsWith(character)) {
                 if (index > 0) {
-                    textArea.innerHTML += `<p>(${index - temp_2 - 2})<br>${textList[index - 1]}</p>`;
-                    temp_2 = index;
+                    textArea.innerHTML += `<p><br><br>(${index - temp - 2}) (page: ${page})<br><br>${textList[index - 1]}</p>`;
+                    temp = index;
                 }
                 textArea.innerHTML += `<p>${text}</p>`;
             }
