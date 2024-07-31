@@ -165,13 +165,14 @@
         while (currentLineIndex < pdfTextList.length) {
             const text = pdfTextList[currentLineIndex];
             const preText = currentLineIndex > 0 ? pdfTextList[currentLineIndex - 1] : '';
-            let lines_since = currentLineIndex - temp - 2
+            let lines_since = currentLineIndex - temp - 2;
+            let page = Math.floor(currentLineIndex / 2004 * 114);
             if (text.startsWith(character)) {
                 if(hidden){
-                    textArea.innerHTML = `<p>Lines before: ${lines_since}</p><p>${preText}</p>`;
+                    textArea.innerHTML = `<p>Übersprungen: ${lines_since}</p><p>Line: ${currentLineIndex} ca Seite ${page}</p><p>${preText}</p>`;
                     hidden = !hidden
                 } else {
-                    textArea.innerHTML = `<p>Lines before: ${lines_since}</p><p>${preText}</p><p>${text}</p>`;
+                    textArea.innerHTML = `<p>Übersprungen: ${lines_since}</p><p>Line: ${currentLineIndex} ca Seite ${page}</p><p>${preText}</p><p>${text}</p>`;
                     hidden = !hidden
                     temp = currentLineIndex;
                     currentLineIndex++;
