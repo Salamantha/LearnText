@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Text Extractor</title>
+    <script>
+        async function submitForm(event) {
+            event.preventDefault();
+            const file = document.querySelector('#file').files[0];
+            const character = document.querySelector('#character').value;
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const response = await fetch('/', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                const result = await response.text();
+                document.querySelector('#result').innerHTML = result;
+            }
+        }
+
+        async function fetchText() {
+            const start = document.querySelector('#start').value;
+            const character = document.querySelector('#character').value;
+            const response = await fetch('/text', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    start: start,
+                    character: character,
+                    file_path: document.querySelector('#file_path').value
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const resultDiv = document.querySelector('#result');
+                resultDiv.innerHTML = data.map(item => `<div><b>${item.index}</b>: ${item.text}</div>`).join('');
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>PDF Text Extractor</h1>
+    <form onsubmit="submitForm(event)">
+        <input type="file" id="file" name="file" required>
+        <select id="character" name="character">
+            <option value="VIC">VIC</option>
+            <option value="ABC">ABC</option>
+            <!-- Add more options as needed -->
+        </select>
+        <input type="number" id="start" name="start" placeholder="Start Index">
+        <button type="submit">Upload and Extract</button>
+    </form>
+    <input type="hidden" id="file_path" value="">
+    <div id="result"></div>
+</body>
+</html>
