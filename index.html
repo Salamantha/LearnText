@@ -4,19 +4,56 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PDF Text Extractor</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
-    <script src="script.js" defer></script>
-    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <h1>PDF Text Extractor</h1>
-    <input type="file" id="file" accept=".pdf" />
-    <select id="character">
-        <option value="VIC">VIC</option>
-        <option value="ABC">ABC</option>
-        <!-- Add more options as needed -->
-    </select>
-    <button id="extract">Extract Text</button>
-    <div id="result"></div>
+    <input type="file" id="fileInput" accept=".pdf">
+    <button id="processButton">Process PDF</button>
+    <div id="output"></div>
+
+    <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+    <script>
+        document.getElementById('processButton').addEventListener('click', async () => {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('Please upload a PDF file.');
+                return;
+            }
+
+            const pdfDoc = await PDFLib.PDFDocument.load(await file.arrayBuffer());
+            const textContent = await extractTextFromPDF(pdfDoc);
+            const splitText = splitTextByPattern(textContent);
+            displayText(splitText);
+        });
+
+        async function extractTextFromPDF(pdfDoc) {
+            let text = '';
+            const pages = pdfDoc.getPages();
+            for (const page of pages) {
+                const { textContent } = await page.getTextContent();
+                text += textContent.items.map(item => item.str).join(' ');
+            }
+            return text;
+        }
+
+        function splitTextByPattern(text) {
+            const pattern = /([A-Z]+:)/g;
+            const splitText = text.split(pattern);
+            let combinedText = [];
+            for (let i = 1; i < splitText.length; i += 2) {
+                combinedText.push(splitText[i] + (splitText[i + 1] || ''));
+            }
+            if (splitText.length > 0 && !/^[A-Z]+:/.test(splitText[0])) {
+                combinedText = [splitText[0]].concat(combinedText);
+            }
+            return combinedText;
+        }
+
+        function displayText(textArray) {
+            const outputDiv = document.getElementById('output');
+            outputDiv.innerHTML = textArray.map((item, index) => `<p><strong>Part ${index + 1}:</strong><br>${item.replace(/\n/g, '<br>')}</p>`).join('');
+        }
+    </script>
 </body>
 </html>
