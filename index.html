@@ -20,6 +20,9 @@
         button {
             margin-top: 10px;
         }
+        #learnControls {
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -28,8 +31,21 @@
     <select id="characterSelect">
         <option value="VIC">VIC</option>
         <option value="HENRY">HENRY</option>
+        <option value="BETTY">BETTY</option>
+        <option value="JEAN">JEAN</option>
+        <option value="SLATER">SLATER</option>
+        <option value="DAVENPORT">DAVENPORT</option>
+        <option value="BILL">BILL</option>
+        <option value="FUSSGAENGER">FUSSGAENGER</option>
     </select>
     <button onclick="loadText()">Load Text</button>
+
+    <div id="learnControls">
+        <label for="startLine">Start line:</label>
+        <input type="number" id="startLine" value="0" min="0" max="2000">
+        <button onclick="learnText()">Learn Text</button>
+        <button onclick="continueText()">Continue</button>
+    </div>
     
     <div id="displayArea">
         <div id="textArea"></div>
@@ -38,31 +54,81 @@
     <script>
         const textArea = document.getElementById('textArea');
         const characterSelect = document.getElementById('characterSelect');
+        const startLineInput = document.getElementById('startLine');
+        let pdfTextList = [];
+    let currentLineIndex = 0;
+    let learningMode = false;
+    let character = '';
+    let hidden = true;
+    let temp = 0;
 
-        async function loadText() {
-            try {
-                const response = await fetch('text.json');
-                const data = await response.json();
-                const character = characterSelect.value;
+    async function loadText() {
+        try {
+            const response = await fetch('text.json');
+            const data = await response.json();
+            pdfTextList = data;
+            character = characterSelect.value; // Update character based on selection
+            if (!learningMode) {
                 displayText(data, character);
-            } catch (error) {
-                console.error('Error loading text:', error);
             }
+        } catch (error) {
+            console.error('Error loading text:', error);
         }
+    }
 
-        function displayText(textList, character) {
-            textArea.innerHTML = '';
-            let temp = 0;
-            textList.forEach((text, index) => {
-                if (text.startsWith(character)) {
-                    if (index > 0) {
-                        textArea.innerHTML += `<p>(${index - temp - 2})<br>${textList[index - 1]}</p>`;
-                        temp = index;
-                    }
-                    textArea.innerHTML += `<p>${text}</p>`;
+    function displayText(textList, character) {
+        textArea.innerHTML = '';
+        let temp = 0;
+        textList.forEach((text, index) => {
+            if (text.startsWith(character)) {
+                if (index > 0) {
+                    textArea.innerHTML += `<p>(${index - temp - 2})<br>${textList[index - 1]}</p>`;
+                    temp = index;
                 }
-            });
+                textArea.innerHTML += `<p>${text}</p>`;
+            }
+        });
+    }
+
+    function learnText() {
+        learningMode = true;
+        currentLineIndex = parseInt(startLineInput.value, 10);
+        if (currentLineIndex < 0) currentLineIndex = 0;
+        character = characterSelect.value; // Ensure character is updated
+        hidden=true;
+        displayLearnedText();
+    }
+
+    function continueText() {
+        if (learningMode) {
+            displayLearnedText();
         }
+    }
+
+    function displayLearnedText() {
+        while (currentLineIndex < pdfTextList.length) {
+            const text = pdfTextList[currentLineIndex];
+            const preText = currentLineIndex > 0 ? pdfTextList[currentLineIndex - 1] : '';
+            let lines_since = currentLineIndex - temp - 2
+            if (text.startsWith(character)) {
+                if(hidden){
+                    textArea.innerHTML = `<p>Lines before: ${lines_since}</p><p>${preText}</p>`;
+                    hidden = !hidden
+                } else {
+                    textArea.innerHTML = `<p>Lines before: ${lines_since}</p><p>${preText}</p><p>${text}</p>`;
+                    hidden = !hidden
+                    temp = currentLineIndex;
+                    currentLineIndex++;
+                }          
+                return;
+            } else {
+                currentLineIndex++;
+            }
+            
+        }
+        textArea.innerHTML = '<p>No more text to display.</p>';
+        learningMode = false; // End learning mode when all relevant text is shown
+    }
     </script>
 </body>
 </html>
